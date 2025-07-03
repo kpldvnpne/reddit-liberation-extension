@@ -5,7 +5,15 @@ chrome.storage.sync.get(['userData'], function(result) {
     if (result.userData != undefined)
     {
         whiteList = result.userData.whiteList;
+        if (whiteList == null) {
+            whiteList = [];
+        }
+
         blackList = result.userData.blackList;
+        if (blackList == null) {
+            blackList = [];
+        }
+
         pausedUntilTime = result.userData.pausedUntilTime;
     }
 
@@ -17,10 +25,9 @@ chrome.storage.sync.get(['userData'], function(result) {
 
     // populate currently paused time
     if (pausedUntilTime != null) {
-        var time = pausedUntilTime.toLocaleString();
+        var time = new Date(pausedUntilTime).toLocaleString();
         pausedElement.innerHTML += `Currently paused until: ${time}`;
     }
-
 
     // populate the lists
     whiteList.forEach(element => {
@@ -102,11 +109,9 @@ chrome.storage.sync.get(['userData'], function(result) {
     }
 
     var pauseFor5Minutes = function () {
-        pausedUntilTime = new Date(new Date().getTime() + 5 * 60 * 1000);
-        userData = { ...userData, pausedUntilTime: pausedUntilTime };
-        chrome.storage.sync.set({userData: userData}, function() {
-            //console.log('Value is set to ' + userData)
-        });
+        pausedUntilTime = new Date().getTime() + 5 * 60 * 1000;
+        userData = { whiteList, blackList, pausedUntilTime };
+        chrome.storage.sync.set({userData: userData}, function() {});
     }
 
     document.getElementById("pauseFor5MinBtn").onclick = pauseFor5Minutes;
