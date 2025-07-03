@@ -54,11 +54,16 @@ chrome.storage.sync.get(['userData'], function(result) {
     whiteList = [];
     blackList = [];
     pausedUntilTime = null;
+    console.log("Here");
     if (result.userData != undefined)
     {
         whiteList = result.userData.whiteList;
         blackList = result.userData.blackList;
         pausedUntilTime = result.userData.pausedUntilTime;
+
+        if (pausedUntilTime != null) {
+            pausedUntilTime = new Date(pausedUntilTime);
+        }
     }
 
     pathName = window.location.pathname;
@@ -70,45 +75,45 @@ chrome.storage.sync.get(['userData'], function(result) {
     if (!isPaused) {
         var newUserData = {...result.userData, pausedUntilTime: null};
         chrome.storage.sync.set({userData: newUserData}, function() {});
-    }
 
-    if (!isPaused && pathName != null )
-    {
-        if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
+        if (pathName != null )
         {
-            // check the blacklist to see
-            blackList.forEach(element => {
-                if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+            if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
+            {
+                // check the blacklist to see
+                blackList.forEach(element => {
+                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+                    {
+                        //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
+                        window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
+                    }
+                })
+            }
+            else
+            {
+                console.log("2");
+                // check each member of the whitelist, if the website isn't there, block it
+                willBlock = true;
+                whiteList.forEach(element => {
+                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+                    {
+                        willBlock = false;
+                    }
+                })
+
+                // I need to do testing to see if this works, because it could very well not work
+                if (willBlock)
                 {
                     //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
                     window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
                 }
-            })
+            }
         }
         else
         {
-            console.log("2");
-            // check each member of the whitelist, if the website isn't there, block it
-            willBlock = true;
-            whiteList.forEach(element => {
-                if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
-                {
-                    willBlock = false;
-                }
-            })
-
-            // I need to do testing to see if this works, because it could very well not work
-            if (willBlock)
-            {
-                //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
-                window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
-            }
+            //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
+            window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
         }
-    }
-    else
-    {
-        //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
-        window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
     }
 
     setInterval(deleteCommentAndLogo, 1000)
