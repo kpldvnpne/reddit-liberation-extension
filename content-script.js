@@ -1,10 +1,10 @@
 function deleteCommentAndLogo() {
     try{
         document.getElementsByClassName('_30BbATRhFv3V83DHNDjJAO')[0].innerHTML = ""
-        
+
     }
     catch(err) {
-        
+
     }
 
     try{
@@ -53,17 +53,26 @@ function deleteCommentAndLogo() {
 chrome.storage.sync.get(['userData'], function(result) {
     whiteList = [];
     blackList = [];
+    pausedUntilTime = null;
     if (result.userData != undefined)
     {
         whiteList = result.userData.whiteList;
         blackList = result.userData.blackList;
+        pausedUntilTime = result.userData.pausedUntilTime;
     }
-
 
     pathName = window.location.pathname;
 
     // check if not a comment section, and not a whitelisted subreddit
-    if (pathName != null )
+    var currentTime = new Date();
+    var isPaused = currentTime <= pausedUntilTime;
+
+    if (!isPaused) {
+        var newUserData = {...result.userData, pausedUntilTime: null};
+        chrome.storage.sync.set({userData: newUserData}, function() {});
+    }
+
+    if (!isPaused && pathName != null )
     {
         if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
         {
@@ -87,7 +96,7 @@ chrome.storage.sync.get(['userData'], function(result) {
                     willBlock = false;
                 }
             })
-            
+
             // I need to do testing to see if this works, because it could very well not work
             if (willBlock)
             {
@@ -102,5 +111,5 @@ chrome.storage.sync.get(['userData'], function(result) {
         window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
     }
 
-    setInterval(deleteCommentAndLogo, 100)
+    setInterval(deleteCommentAndLogo, 1000)
 });
