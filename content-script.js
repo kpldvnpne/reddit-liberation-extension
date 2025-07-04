@@ -1,3 +1,17 @@
+class UserData {
+    static promise = null;
+    static async getData() {
+        if (UserData.promise == null) {
+            UserData.promise = chrome.storage.sync.get(['userData']);
+        }
+
+        var data = await UserData.promise;
+        UserData.promise = null;
+
+        return data;
+    }
+}
+
 function deleteCommentAndLogo() {
     try{
         document.getElementsByClassName('_30BbATRhFv3V83DHNDjJAO')[0].innerHTML = ""
@@ -56,7 +70,7 @@ function redirect() {
     window.location.href = redirectUrl;
 }
 
-chrome.storage.sync.get(['userData'], function(result) {
+UserData.getData().then(function(result) {
     whiteList = [];
     blackList = [];
     pausedUntilTime = null;

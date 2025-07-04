@@ -1,3 +1,17 @@
+class UserData {
+    static promise = null;
+    static async getData() {
+        if (UserData.promise == null) {
+            UserData.promise = chrome.storage.sync.get(['userData']);
+        }
+
+        var data = await UserData.promise;
+        UserData.promise = null;
+
+        return data;
+    }
+}
+
 function areSameDay(firstDate, secondDate) {
     return (firstDate.getFullYear() == secondDate.getFullYear() &&
         firstDate.getMonth() == secondDate.getMonth() &&
@@ -18,46 +32,47 @@ function hhmmss(seconds) {
     return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
 }
 
-function updatePausedElement() {
+async function updatePausedElement() {
     var pausedElement = document.getElementById("current-pause");
 
-    chrome.storage.sync.get(['userData'], function(result) {
-        var pausedUntilTime = result.userData.pausedUntilTime;
+    var result = await UserData.getData();
+    var pausedUntilTime = result.userData.pausedUntilTime;
 
-        if (pausedUntilTime == null) {
+    console.log(pausedUntilTime);
+
+    if (pausedUntilTime == null) {
+        pausedElement.innerHTML = '';
+    }
+
+    // populate currently paused time
+    if (pausedUntilTime != null) {
+        var currentTime = Date.now();
+        var pausedTimePassed = pausedUntilTime <= currentTime;
+
+        if (pausedTimePassed) {
+            // eliminate the time from storage
             pausedElement.innerHTML = '';
-        }
-
-        // populate currently paused time
-        if (pausedUntilTime != null) {
-            var currentTime = Date.now();
-            var pausedTimePassed = pausedUntilTime <= currentTime;
-
-            if (pausedTimePassed) {
-                // eliminate the time from storage
-                pausedElement.innerHTML = '';
+        } else {
+            var time;
+            if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
+                time = new Date(pausedUntilTime).toLocaleTimeString();
             } else {
-                var time;
-                if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
-                    time = new Date(pausedUntilTime).toLocaleTimeString();
-                } else {
-                    time = new Date(pausedUntilTime).toLocaleString();
-                }
-                var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
-                pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time}) <button id="cancel-pause">Cancel Pause</button>`;
-                document.getElementById("cancel-pause").onclick = cancelPause;
+                time = new Date(pausedUntilTime).toLocaleString();
             }
+            var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
+            pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time}) <button id="cancel-pause">Cancel Pause</button>`;
+            document.getElementById("cancel-pause").onclick = cancelPause;
         }
-    })
+    }
 }
 
 async function cancelPause() {
-    const result = await chrome.storage.sync.get(['userData']);
+    const result = await UserData.getData();
     const newUserData = {...result.userData, pausedUntilTime: null}
     await chrome.storage.sync.set({userData: newUserData});
 }
 
-chrome.storage.sync.get(['userData'], function(result) {
+UserData.getData().then(function(result) {
     whiteList = [];
     blackList = [];
     var pausedUntilTime = null;
@@ -82,7 +97,7 @@ chrome.storage.sync.get(['userData'], function(result) {
     blackListElement = document.getElementById("blackList");
 
     var ONE_SECOND = 1_000;
-    setInterval(() => updatePausedElement(), ONE_SECOND)
+    setInterval(() => updatePausedElement(), 1000)
 
     // populate the lists
     whiteList.forEach(element => {
