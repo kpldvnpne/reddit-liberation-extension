@@ -10,6 +10,10 @@ class UserData {
 
         return data;
     }
+
+    static async setData(userData) {
+        await chrome.storage.sync.set({ userData: userData })
+    }
 }
 
 function areSameDay(firstDate, secondDate) {
@@ -181,9 +185,10 @@ UserData.getData().then(function(result) {
     var pauseFor5Minutes = function () {
         pausedUntilTime = new Date().getTime() + 5 * 60 * 1000;
         userData = { whiteList, blackList, pausedUntilTime };
-        chrome.storage.sync.set({userData: userData}, function() {});
 
-        updatePausedElement(pausedUntilTime);
+        UserData.setData(userData).then(() => {
+            updatePausedElement();
+        });
     }
 
     document.getElementById("pauseFor5MinBtn").onclick = pauseFor5Minutes;
