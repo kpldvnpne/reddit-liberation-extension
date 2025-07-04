@@ -106,29 +106,36 @@ async function redirectAndRemoveIfNeeded() {
         var newUserData = {...result.userData, pausedUntilTime: null};
         chrome.storage.sync.set({userData: newUserData}, function() {});
 
+        function isUserPath(pathName, candidate) {
+            return pathName.toLowerCase().includes("/user/" + candidate.toLowerCase());
+        }
+
+        function isSubredditPath(pathName, candidate) {
+            return pathName.toLowerCase().includes("/r/" + candidate.toLowerCase());
+        }
+
+        function isUserOrSubredditPath(pathName, candidate) {
+            return isUserPath(pathName, candidate) && isSubredditPath(pathName, candidate);
+        }
+
         if (pathName != null )
         {
-            if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
+            var isCommmentsOrMessagesOrSettings = pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/");
+            var isAllowedPath = isCommmentsOrMessagesOrSettings;
+            if (isAllowedPath)
             {
-                // check the blacklist to see
-                blackList.forEach(element => {
-                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
-                    {
-                        redirect();
-                    }
-                })
+                // check the blacklist to see whether to block
+                var isBlackListedPath = blackList.some((item) => isUserOrSubredditPath(pathName, item))
+                if (isBlackListedPath) {
+                    redirect();
+                }
             }
             else
             {
                 console.log("2");
                 // check each member of the whitelist, if the website isn't there, block it
-                var shouldBlock = true;
-                whiteList.forEach(element => {
-                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
-                    {
-                        shouldBlock = false;
-                    }
-                })
+                var isWhiteListedPath = whiteList.some((item) => isUserOrSubredditPath(pathName, item));
+                var shouldBlock = !isWhiteListedPath;
 
                 // I need to do testing to see if this works, because it could very well not work
                 if (shouldBlock)
