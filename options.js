@@ -22,6 +22,20 @@ chrome.storage.sync.get(['userData'], function(result) {
     whiteListElement = document.getElementById("whiteList");
     blackListElement = document.getElementById("blackList");
 
+    function hhmmss(seconds) {
+        ss = seconds % 60;
+        mm = Math.floor(seconds / 60);
+
+        hh = Math.floor(mm / 60);
+        mm = mm % 60;
+
+        function pad(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+    }
+
     function updatePausedElement(pausedUntilTime) {
         var pausedElement = document.getElementById("current-pause");
 
@@ -36,15 +50,14 @@ chrome.storage.sync.get(['userData'], function(result) {
                 pausedElement.innerHTML = '';
             } else {
                 var time = new Date(pausedUntilTime).toLocaleString();
-                var minutes = (pausedUntilTime - currentTime) / 60 / 1000;
-                minutes = Math.ceil(minutes);
-                pausedElement.innerHTML = `Currently paused for ${minutes} minutes (until: ${time})`;
+                var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
+                pausedElement.innerHTML = `Currently paused for ${hhmmss(pausedForInSeconds)} (until: ${time})`;
             }
         }
     }
 
-    updatePausedElement(pausedUntilTime);
-
+    var ONE_SECOND = 1_000;
+    setInterval(() => updatePausedElement(pausedUntilTime), ONE_SECOND)
 
     // populate the lists
     whiteList.forEach(element => {
