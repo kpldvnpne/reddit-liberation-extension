@@ -76,6 +76,10 @@ async function cancelPause() {
     await chrome.storage.sync.set({userData: newUserData});
 }
 
+var ONE_SECOND = 1_000;
+updatePausedElement();
+setInterval(() => updatePausedElement(), 1000)
+
 UserData.getData().then(function(result) {
     whiteList = [];
     blackList = [];
@@ -99,9 +103,6 @@ UserData.getData().then(function(result) {
 
     whiteListElement = document.getElementById("whiteList");
     blackListElement = document.getElementById("blackList");
-
-    var ONE_SECOND = 1_000;
-    setInterval(() => updatePausedElement(), 1000)
 
     // populate the lists
     whiteList.forEach(element => {
