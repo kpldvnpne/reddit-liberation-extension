@@ -1,3 +1,56 @@
+function areSameDay(firstDate, secondDate) {
+    return (firstDate.getFullYear() == secondDate.getFullYear() &&
+        firstDate.getMonth() == secondDate.getMonth() &&
+        firstDate.getDate() == secondDate.getDate());
+}
+
+function hhmmss(seconds) {
+    ss = seconds % 60;
+    mm = Math.floor(seconds / 60);
+
+    hh = Math.floor(mm / 60);
+    mm = mm % 60;
+
+    function pad(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+    return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+}
+
+function updatePausedElement() {
+    var pausedElement = document.getElementById("current-pause");
+
+    chrome.storage.sync.get(['userData'], function(result) {
+        var pausedUntilTime = result.userData.pausedUntilTime;
+
+        if (pausedUntilTime == null) {
+            pausedElement.innerHTML = '';
+        }
+
+        // populate currently paused time
+        if (pausedUntilTime != null) {
+            var currentTime = Date.now();
+            var pausedTimePassed = pausedUntilTime <= currentTime;
+
+            if (pausedTimePassed) {
+                // eliminate the time from storage
+                pausedElement.innerHTML = '';
+            } else {
+                var time;
+                if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
+                    time = new Date(pausedUntilTime).toLocaleTimeString();
+                } else {
+                    time = new Date(pausedUntilTime).toLocaleString();
+                }
+                var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
+                pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time}) <button id="cancel-pause">Cancel Pause</button>`;
+                document.getElementById("cancel-pause").onclick = cancelPause;
+            }
+        }
+    })
+}
+
 async function cancelPause() {
     const result = await chrome.storage.sync.get(['userData']);
     const newUserData = {...result.userData, pausedUntilTime: null}
@@ -27,59 +80,6 @@ chrome.storage.sync.get(['userData'], function(result) {
 
     whiteListElement = document.getElementById("whiteList");
     blackListElement = document.getElementById("blackList");
-
-    function hhmmss(seconds) {
-        ss = seconds % 60;
-        mm = Math.floor(seconds / 60);
-
-        hh = Math.floor(mm / 60);
-        mm = mm % 60;
-
-        function pad(num) {
-            return num.toString().padStart(2, '0');
-        }
-
-        return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
-    }
-
-    function areSameDay(firstDate, secondDate) {
-        return (firstDate.getFullYear() == secondDate.getFullYear() &&
-            firstDate.getMonth() == secondDate.getMonth() &&
-            firstDate.getDate() == secondDate.getDate());
-    }
-
-    function updatePausedElement() {
-        var pausedElement = document.getElementById("current-pause");
-
-        chrome.storage.sync.get(['userData'], function(result) {
-            var pausedUntilTime = result.userData.pausedUntilTime;
-
-            if (pausedUntilTime == null) {
-                pausedElement.innerHTML = '';
-            }
-
-            // populate currently paused time
-            if (pausedUntilTime != null) {
-                var currentTime = Date.now();
-                var pausedTimePassed = pausedUntilTime <= currentTime;
-
-                if (pausedTimePassed) {
-                    // eliminate the time from storage
-                    pausedElement.innerHTML = '';
-                } else {
-                    var time;
-                    if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
-                        time = new Date(pausedUntilTime).toLocaleTimeString();
-                    } else {
-                        time = new Date(pausedUntilTime).toLocaleString();
-                    }
-                    var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
-                    pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time}) <button id="cancel-pause">Cancel Pause</button>`;
-                    document.getElementById("cancel-pause").onclick = cancelPause;
-                }
-            }
-        })
-    }
 
     var ONE_SECOND = 1_000;
     setInterval(() => updatePausedElement(), ONE_SECOND)
