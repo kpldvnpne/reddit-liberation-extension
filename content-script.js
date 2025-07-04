@@ -72,6 +72,12 @@ var ElementsRemover = function () {
 
 var elementsRemover = new ElementsRemover();
 
+var redirectUrl = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
+function redirect() {
+    //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
+    window.location.href = redirectUrl;
+}
+
 chrome.storage.sync.get(['userData'], function(result) {
     whiteList = [];
     blackList = [];
@@ -106,8 +112,7 @@ chrome.storage.sync.get(['userData'], function(result) {
                 blackList.forEach(element => {
                     if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
                     {
-                        //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
-                        window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
+                        redirect();
                     }
                 })
             }
@@ -115,26 +120,24 @@ chrome.storage.sync.get(['userData'], function(result) {
             {
                 console.log("2");
                 // check each member of the whitelist, if the website isn't there, block it
-                willBlock = true;
+                var shouldBlock = true;
                 whiteList.forEach(element => {
                     if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
                     {
-                        willBlock = false;
+                        shouldBlock = false;
                     }
                 })
 
                 // I need to do testing to see if this works, because it could very well not work
-                if (willBlock)
+                if (shouldBlock)
                 {
-                    //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
-                    window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
+                    redirect();
                 }
             }
         }
         else
         {
-            //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
-            window.location.href = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
+            redirect();
         }
     }
 
