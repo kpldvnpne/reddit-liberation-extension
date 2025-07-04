@@ -1,3 +1,9 @@
+async function cancelPause() {
+    const result = await chrome.storage.sync.get(['userData']);
+    const newUserData = {...result.userData, pausedUntilTime: null}
+    await chrome.storage.sync.set({userData: newUserData});
+}
+
 chrome.storage.sync.get(['userData'], function(result) {
     whiteList = [];
     blackList = [];
@@ -48,6 +54,10 @@ chrome.storage.sync.get(['userData'], function(result) {
         chrome.storage.sync.get(['userData'], function(result) {
             var pausedUntilTime = result.userData.pausedUntilTime;
 
+            if (pausedUntilTime == null) {
+                pausedElement.innerHTML = '';
+            }
+
             // populate currently paused time
             if (pausedUntilTime != null) {
                 var currentTime = Date.now();
@@ -64,7 +74,8 @@ chrome.storage.sync.get(['userData'], function(result) {
                         time = new Date(pausedUntilTime).toLocaleString();
                     }
                     var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
-                    pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time})`;
+                    pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time}) <button id="cancel-pause">Cancel Pause</button>`;
+                    document.getElementById("cancel-pause").onclick = cancelPause;
                 }
             }
         })
