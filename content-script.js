@@ -76,7 +76,7 @@ chrome.storage.sync.get(['userData'], function(result) {
     whiteList = [];
     blackList = [];
     pausedUntilTime = null;
-    console.log("Here");
+
     if (result.userData != undefined)
     {
         whiteList = result.userData.whiteList;
