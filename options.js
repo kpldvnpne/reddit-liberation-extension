@@ -27,8 +27,19 @@ chrome.storage.sync.get(['userData'], function(result) {
 
         // populate currently paused time
         if (pausedUntilTime != null) {
-            var time = new Date(pausedUntilTime).toLocaleString();
-            pausedElement.innerHTML += `Currently paused until: ${time}`;
+            var currentTime = Date.now();
+            var pausedTimePassed = pausedUntilTime <= currentTime;
+
+            if (pausedTimePassed) {
+                // eliminate the time from storage
+                chrome.storage.sync.set({userData: {...userData, pausedTimePassed: null }}, () => {});
+                pausedElement.innerHTML = '';
+            } else {
+                var time = new Date(pausedUntilTime).toLocaleString();
+                var minutes = (pausedUntilTime - currentTime) / 60 / 1000;
+                minutes = Math.ceil(minutes);
+                pausedElement.innerHTML = `Currently paused for ${minutes} minutes (until: ${time})`;
+            }
         }
     }
 
