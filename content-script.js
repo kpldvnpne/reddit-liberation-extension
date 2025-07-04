@@ -50,6 +50,28 @@ function deleteCommentAndLogo() {
     }
 }
 
+var ElementsRemover = function () {
+    var id = null;
+
+    function removeIntervalIfPossible() {
+        if (id != null) {
+            clearInterval(id);
+        }
+    }
+
+    return {
+        removeElementsPeriodically: () => {
+            removeIntervalIfPossible();
+            id = setInterval(deleteCommentAndLogo, 100);
+        },
+        stopPeriodicRemoval: () => {
+            removeIntervalIfPossible();
+        }
+    }
+}
+
+var elementsRemover = new ElementsRemover();
+
 chrome.storage.sync.get(['userData'], function(result) {
     whiteList = [];
     blackList = [];
@@ -116,5 +138,9 @@ chrome.storage.sync.get(['userData'], function(result) {
         }
     }
 
-    setInterval(deleteCommentAndLogo, 1000)
+    if (isPaused) {
+        elementsRemover.stopPeriodRemoval();
+    } else {
+        elementsRemover.removeElementsPeriodically();
+    }
 });
