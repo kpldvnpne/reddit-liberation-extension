@@ -70,7 +70,10 @@ function redirect() {
     window.location.href = redirectUrl;
 }
 
-UserData.getData().then(function(result) {
+// check if not a comment section, and not a whitelisted subreddit
+async function redirectAndRemoveIfNeeded() {
+    var result = await UserData.getData();
+
     whiteList = [];
     blackList = [];
     pausedUntilTime = null;
@@ -88,56 +91,54 @@ UserData.getData().then(function(result) {
 
     pathName = window.location.pathname;
 
-    // check if not a comment section, and not a whitelisted subreddit
-    function redirectAndRemoveIfNeeded() {
-        var currentTime = new Date();
-        var isPaused = currentTime <= pausedUntilTime;
+    var currentTime = new Date();
+    var isPaused = currentTime <= pausedUntilTime;
 
-        if (!isPaused) {
-            var newUserData = {...result.userData, pausedUntilTime: null};
-            chrome.storage.sync.set({userData: newUserData}, function() {});
+    if (!isPaused) {
+        var newUserData = {...result.userData, pausedUntilTime: null};
+        chrome.storage.sync.set({userData: newUserData}, function() {});
 
-            if (pathName != null )
+        if (pathName != null )
+        {
+            if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
             {
-                if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
-                {
-                    // check the blacklist to see
-                    blackList.forEach(element => {
-                        if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
-                        {
-                            redirect();
-                        }
-                    })
-                }
-                else
-                {
-                    console.log("2");
-                    // check each member of the whitelist, if the website isn't there, block it
-                    var shouldBlock = true;
-                    whiteList.forEach(element => {
-                        if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
-                        {
-                            shouldBlock = false;
-                        }
-                    })
-
-                    // I need to do testing to see if this works, because it could very well not work
-                    if (shouldBlock)
+                // check the blacklist to see
+                blackList.forEach(element => {
+                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
                     {
                         redirect();
                     }
-                }
+                })
             }
             else
             {
-                redirect();
+                console.log("2");
+                // check each member of the whitelist, if the website isn't there, block it
+                var shouldBlock = true;
+                whiteList.forEach(element => {
+                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+                    {
+                        shouldBlock = false;
+                    }
+                })
+
+                // I need to do testing to see if this works, because it could very well not work
+                if (shouldBlock)
+                {
+                    redirect();
+                }
             }
         }
-
-        if (!isPaused) {
-            deleteCommentAndLogo();
+        else
+        {
+            redirect();
         }
     }
 
-    setInterval(redirectAndRemoveIfNeeded, 1000);
-});
+    if (!isPaused) {
+        deleteCommentAndLogo();
+    }
+}
+
+setInterval(redirectAndRemoveIfNeeded, 1000);
+
