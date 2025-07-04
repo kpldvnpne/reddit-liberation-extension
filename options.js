@@ -36,6 +36,12 @@ chrome.storage.sync.get(['userData'], function(result) {
         return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
     }
 
+    function areSameDay(firstDate, secondDate) {
+        return (firstDate.getFullYear() == secondDate.getFullYear() &&
+            firstDate.getMonth() == secondDate.getMonth() &&
+            firstDate.getDate() == secondDate.getDate());
+    }
+
     function updatePausedElement(pausedUntilTime) {
         var pausedElement = document.getElementById("current-pause");
 
@@ -49,9 +55,14 @@ chrome.storage.sync.get(['userData'], function(result) {
                 chrome.storage.sync.set({userData: {...userData, pausedTimePassed: null }}, () => {});
                 pausedElement.innerHTML = '';
             } else {
-                var time = new Date(pausedUntilTime).toLocaleString();
+                var time;
+                if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
+                    time = new Date(pausedUntilTime).toLocaleTimeString();
+                } else {
+                    time = new Date(pausedUntilTime).toLocaleString();
+                }
                 var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
-                pausedElement.innerHTML = `Currently paused for ${hhmmss(pausedForInSeconds)} (until: ${time})`;
+                pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time})`;
             }
         }
     }
