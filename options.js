@@ -21,13 +21,19 @@ chrome.storage.sync.get(['userData'], function(result) {
 
     whiteListElement = document.getElementById("whiteList");
     blackListElement = document.getElementById("blackList");
-    pausedElement = document.getElementById("current-pause");
 
-    // populate currently paused time
-    if (pausedUntilTime != null) {
-        var time = new Date(pausedUntilTime).toLocaleString();
-        pausedElement.innerHTML += `Currently paused until: ${time}`;
+    function updatePausedElement(pausedUntilTime) {
+        var pausedElement = document.getElementById("current-pause");
+
+        // populate currently paused time
+        if (pausedUntilTime != null) {
+            var time = new Date(pausedUntilTime).toLocaleString();
+            pausedElement.innerHTML += `Currently paused until: ${time}`;
+        }
     }
+
+    updatePausedElement(pausedUntilTime);
+
 
     // populate the lists
     whiteList.forEach(element => {
@@ -112,6 +118,8 @@ chrome.storage.sync.get(['userData'], function(result) {
         pausedUntilTime = new Date().getTime() + 5 * 60 * 1000;
         userData = { whiteList, blackList, pausedUntilTime };
         chrome.storage.sync.set({userData: userData}, function() {});
+
+        updatePausedElement(pausedUntilTime);
     }
 
     document.getElementById("pauseFor5MinBtn").onclick = pauseFor5Minutes;
