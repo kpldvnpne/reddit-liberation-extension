@@ -50,28 +50,6 @@ function deleteCommentAndLogo() {
     }
 }
 
-var ElementsRemover = function () {
-    var id = null;
-
-    function removeIntervalIfPossible() {
-        if (id != null) {
-            clearInterval(id);
-        }
-    }
-
-    return {
-        removeElementsPeriodically: () => {
-            removeIntervalIfPossible();
-            id = setInterval(deleteCommentAndLogo, 100);
-        },
-        stopPeriodicRemoval: () => {
-            removeIntervalIfPossible();
-        }
-    }
-}
-
-var elementsRemover = new ElementsRemover();
-
 var redirectUrl = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
 function redirect() {
     //document.getElementsByTagName('body')[0].innerHTML = "<k>STOP PROCRASTINATING ON REDDIT</k> <p>You may only go to reddit comment pages</p> <p>Extension built by <a style=\"color:blue\" href=\"https://henryz.dev/\">Henry Zhang</a></p>";
@@ -97,53 +75,55 @@ chrome.storage.sync.get(['userData'], function(result) {
     pathName = window.location.pathname;
 
     // check if not a comment section, and not a whitelisted subreddit
-    var currentTime = new Date();
-    var isPaused = currentTime <= pausedUntilTime;
+    function redirectAndRemoveIfNeeded() {
+        var currentTime = new Date();
+        var isPaused = currentTime <= pausedUntilTime;
 
-    if (!isPaused) {
-        var newUserData = {...result.userData, pausedUntilTime: null};
-        chrome.storage.sync.set({userData: newUserData}, function() {});
+        if (!isPaused) {
+            var newUserData = {...result.userData, pausedUntilTime: null};
+            chrome.storage.sync.set({userData: newUserData}, function() {});
 
-        if (pathName != null )
-        {
-            if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
+            if (pathName != null )
             {
-                // check the blacklist to see
-                blackList.forEach(element => {
-                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+                if (pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/"))
+                {
+                    // check the blacklist to see
+                    blackList.forEach(element => {
+                        if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+                        {
+                            redirect();
+                        }
+                    })
+                }
+                else
+                {
+                    console.log("2");
+                    // check each member of the whitelist, if the website isn't there, block it
+                    var shouldBlock = true;
+                    whiteList.forEach(element => {
+                        if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
+                        {
+                            shouldBlock = false;
+                        }
+                    })
+
+                    // I need to do testing to see if this works, because it could very well not work
+                    if (shouldBlock)
                     {
                         redirect();
                     }
-                })
+                }
             }
             else
             {
-                console.log("2");
-                // check each member of the whitelist, if the website isn't there, block it
-                var shouldBlock = true;
-                whiteList.forEach(element => {
-                    if (pathName.toLowerCase().includes("/r/" + element.toLowerCase()) || pathName.toLowerCase().includes("/user/" + element.toLowerCase()))
-                    {
-                        shouldBlock = false;
-                    }
-                })
-
-                // I need to do testing to see if this works, because it could very well not work
-                if (shouldBlock)
-                {
-                    redirect();
-                }
+                redirect();
             }
         }
-        else
-        {
-            redirect();
+
+        if (!isPaused) {
+            deleteCommentAndLogo();
         }
     }
 
-    if (isPaused) {
-        elementsRemover.stopPeriodRemoval();
-    } else {
-        elementsRemover.removeElementsPeriodically();
-    }
+    setInterval(redirectAndRemoveIfNeeded, 1000);
 });
