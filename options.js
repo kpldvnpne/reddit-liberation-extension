@@ -42,33 +42,36 @@ chrome.storage.sync.get(['userData'], function(result) {
             firstDate.getDate() == secondDate.getDate());
     }
 
-    function updatePausedElement(pausedUntilTime) {
+    function updatePausedElement() {
         var pausedElement = document.getElementById("current-pause");
 
-        // populate currently paused time
-        if (pausedUntilTime != null) {
-            var currentTime = Date.now();
-            var pausedTimePassed = pausedUntilTime <= currentTime;
+        chrome.storage.sync.get(['userData'], function(result) {
+            var pausedUntilTime = result.userData.pausedUntilTime;
 
-            if (pausedTimePassed) {
-                // eliminate the time from storage
-                chrome.storage.sync.set({userData: {...userData, pausedTimePassed: null }}, () => {});
-                pausedElement.innerHTML = '';
-            } else {
-                var time;
-                if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
-                    time = new Date(pausedUntilTime).toLocaleTimeString();
+            // populate currently paused time
+            if (pausedUntilTime != null) {
+                var currentTime = Date.now();
+                var pausedTimePassed = pausedUntilTime <= currentTime;
+
+                if (pausedTimePassed) {
+                    // eliminate the time from storage
+                    pausedElement.innerHTML = '';
                 } else {
-                    time = new Date(pausedUntilTime).toLocaleString();
+                    var time;
+                    if (areSameDay(new Date(currentTime), new Date(pausedUntilTime))) {
+                        time = new Date(pausedUntilTime).toLocaleTimeString();
+                    } else {
+                        time = new Date(pausedUntilTime).toLocaleString();
+                    }
+                    var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
+                    pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time})`;
                 }
-                var pausedForInSeconds = Math.ceil((pausedUntilTime - currentTime) / 1000);
-                pausedElement.innerHTML = `Currently paused for <span style="font-family: monospace; font-size: 1.5em;">${hhmmss(pausedForInSeconds)}</span> (until: ${time})`;
             }
-        }
+        })
     }
 
     var ONE_SECOND = 1_000;
-    setInterval(() => updatePausedElement(pausedUntilTime), ONE_SECOND)
+    setInterval(() => updatePausedElement(), ONE_SECOND)
 
     // populate the lists
     whiteList.forEach(element => {
