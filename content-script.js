@@ -12,56 +12,42 @@ class UserData {
     }
 }
 
+function hideElement(element) {
+    element.style += '; display: none;'
+}
+
+function hideElementById(id) {
+    try {
+        const element = document.getElementById(id);
+        hideElement(element);
+    } catch (err) {
+        // Silently fail if element not found
+    }
+}
+
+function hideElementByClassName(className) {
+    try {
+        const element = document.getElementByClassName(className);
+        hideElement(element);
+    } catch (err) {
+        // Silently fail if element not found
+    }
+}
+
 function deleteCommentAndLogo() {
-    try{
-        document.getElementsByClassName('_30BbATRhFv3V83DHNDjJAO')[0].innerHTML = ""
+    hideElementByClassName('_30BbATRhFv3V83DHNDjJAO');
 
-    }
-    catch(err) {
-
-    }
-
-    try{
-        document.getElementsByClassName('_2l7c_Oz0UVsamALvPrlznq')[0].innerHTML = ""
-    }
-    catch(err) {
-
-    }
+    hideElementByClassName('_2l7c_Oz0UVsamALvPrlznq');
 
     // Remove left sidebar
-    try {
-        const leftSidebar = document.getElementById('left-sidebar-container');
-        if (leftSidebar) {
-            leftSidebar.remove();
-        }
-    } catch(err) {
-        // Silently fail if element not found
-    }
+    hideElementById('left-sidebar-container');
 
     // Remove right sidebar
-    try {
-        const rightSidebar = document.getElementById('right-sidebar-container');
-        if (rightSidebar) {
-            rightSidebar.remove();
-        }
-    } catch(err) {
-        // Silently fail if element not found
-    }
+    hideElementById('right-sidebar-container');
 
     // Remove Reddit logo
-    try {
-        const redditLogo = document.getElementById('reddit-logo');
-        if (redditLogo) {
-            redditLogo.remove();
-        }
-        // Also try to remove by header logo class
-        const headerLogo = document.querySelector('.header-logo');
-        if (headerLogo) {
-            headerLogo.remove();
-        }
-    } catch(err) {
-        // Silently fail if element not found
-    }
+    hideElementById('reddit-logo');
+    hideElementByClassName('header-logo');
 }
 
 var redirectUrl = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
