@@ -82,8 +82,6 @@ function redirect() {
     window.location.href = redirectUrl;
 }
 
-var wasPaused = true; // At beginning, it should be treated like it was paused before. Otherwise, it will just refresh without stopping
-
 // check if not a comment section, and not a whitelisted subreddit
 async function redirectAndRemoveIfNeeded() {
     var result = await UserData.getData();
@@ -108,11 +106,10 @@ async function redirectAndRemoveIfNeeded() {
     var currentTime = new Date();
     var isPaused = currentTime <= pausedUntilTime;
 
-    if (!wasPaused && isPaused) {
+    if (isPaused) {
         showCommentAndLogo();
     }
 
-    wasPaused = isPaused;
 
     if (!isPaused) {
         var newUserData = {...result.userData, pausedUntilTime: null};
