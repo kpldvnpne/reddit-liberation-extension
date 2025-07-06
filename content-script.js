@@ -12,20 +12,11 @@ class UserData {
     }
 }
 
-function hideElement(element) {
-    element.style += '; display: none;'
-}
+var hidden = false;
 
-function hideElementByQuerySelector(querySelector) {
-    try {
-        const element = document.querySelector(querySelector);
-        hideElement(element);
-    } catch (err) {
-        // Silently fail if element not found
-    }
-}
+var elementsToShow = {};
 
-var toHideQuerySelectors = [
+var elementsToHide = [
     '._30BbATRhFv3V83DHNDjJAO', '._2l7c_Oz0UVsamALvPrlznq',
     // Remove left sidebar
     '#left-sidebar-container',
@@ -35,10 +26,54 @@ var toHideQuerySelectors = [
     '#reddit-logo', '.header-logo'
 ];
 
-function deleteCommentAndLogo() {
-    for (var querySelector of toHideQuerySelectors) {
-        hideElementByQuerySelector(querySelector);
+function hideElement(element) {
+    element.style.display = 'none';
+}
+
+
+function hideElementByQuerySelector(querySelector) {
+    try {
+        const element = document.querySelector(querySelector);
+        elementsToShow[querySelector] = element.style.display;
+        hideElement(element);
+    } catch (err) {
+        // Silently fail if element not found
     }
+}
+
+function showElement(element, displayProperty) {
+    element.style.display = displayProperty;
+}
+
+function showElementByQuerySelector(querySelector) {
+    try {
+        const element = document.querySelector(querySelector);
+        const displayProperty = elementsToShow[querySelector];
+
+        showElement(element, displayProperty);
+    } catch (err) {
+        // Silently fail if element not found
+    }
+}
+
+function hideCommentAndLogo() {
+    if (!hidden) {
+        for (var querySelector of elementsToHide) {
+            hideElementByQuerySelector(querySelector);
+        }
+    }
+
+    hidden = true;
+}
+
+function showCommentAndLogo() {
+    if (hidden) {
+        for (var querySelector of elementsToHide) {
+            showElementByQuerySelector(querySelector);
+        }
+    }
+
+    hidden = false;
 }
 
 var redirectUrl = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
@@ -74,7 +109,7 @@ async function redirectAndRemoveIfNeeded() {
     var isPaused = currentTime <= pausedUntilTime;
 
     if (!wasPaused && isPaused) {
-        window.location.reload();
+        showCommentAndLogo();
     }
 
     wasPaused = isPaused;
@@ -128,7 +163,7 @@ async function redirectAndRemoveIfNeeded() {
     }
 
     if (!isPaused) {
-        deleteCommentAndLogo();
+        hideCommentAndLogo();
     }
 }
 
