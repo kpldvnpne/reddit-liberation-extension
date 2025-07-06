@@ -16,29 +16,29 @@ function hideElement(element) {
     element.style += '; display: none;'
 }
 
-function hideElementByQuerySelector(id) {
+function hideElementByQuerySelector(querySelector) {
     try {
-        const element = document.getElementById(id);
+        const element = document.querySelector(querySelector);
         hideElement(element);
     } catch (err) {
         // Silently fail if element not found
     }
 }
 
-function deleteCommentAndLogo() {
-    hideElementByQuerySelector('._30BbATRhFv3V83DHNDjJAO');
-
-    hideElementByQuerySelector('._2l7c_Oz0UVsamALvPrlznq');
-
+var toHideQuerySelectors = [
+    '._30BbATRhFv3V83DHNDjJAO', '._2l7c_Oz0UVsamALvPrlznq',
     // Remove left sidebar
-    hideElementByQuerySelector('#left-sidebar-container');
-
+    '#left-sidebar-container',
     // Remove right sidebar
-    hideElementByQuerySelector('#right-sidebar-container');
-
+    '#right-sidebar-container',
     // Remove Reddit logo
-    hideElementByQuerySelector('#reddit-logo');
-    hideElementByQuerySelector('.header-logo');
+    '#reddit-logo', '.header-logo'
+];
+
+function deleteCommentAndLogo() {
+    for (var querySelector of toHideQuerySelectors) {
+        hideElementByQuerySelector(querySelector);
+    }
 }
 
 var redirectUrl = "https://hz757.github.io/PortfolioWebsite/RedditLiberationRedirect.html";
