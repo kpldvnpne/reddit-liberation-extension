@@ -129,8 +129,8 @@ async function redirectAndRemoveIfNeeded() {
 
         if (pathName != null )
         {
-            var isCommmentsOrMessagesOrSettings = pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/");
-            var isAllowedPath = isCommmentsOrMessagesOrSettings;
+            var isCommmentsOrMessagesOrSettingsOrNotifications = pathName.includes("comments") || pathName.includes("/message/") || pathName.includes("/settings/") || pathName.includes("/notifications");
+            var isAllowedPath = isCommmentsOrMessagesOrSettingsOrNotifications;
             if (isAllowedPath)
             {
                 // check the blacklist to see whether to block
