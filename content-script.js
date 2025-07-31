@@ -92,8 +92,8 @@ async function redirectAndRemoveIfNeeded() {
 
     if (result.userData != undefined)
     {
-        whiteList = result.userData.whiteList;
-        blackList = result.userData.blackList;
+        whiteList = result.userData.whiteList || [];
+        blackList = result.userData.blackList || [];
         pausedUntilTime = result.userData.pausedUntilTime;
 
         if (pausedUntilTime != null) {
@@ -124,7 +124,7 @@ async function redirectAndRemoveIfNeeded() {
         }
 
         function isUserOrSubredditPath(pathName, candidate) {
-            return isUserPath(pathName, candidate) && isSubredditPath(pathName, candidate);
+            return isUserPath(pathName, candidate) || isSubredditPath(pathName, candidate);
         }
 
         if (pathName != null )
